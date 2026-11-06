@@ -67,7 +67,10 @@ void web_send_to_clients(void *context, uint8_t *data, size_t size)
     httpd_handle_t http_server = *((httpd_handle_t *)context);
     size_t clients = CONFIG_HTTPD_MAX_OPENED_SOCKETS;
     static int client_fds[CONFIG_HTTPD_MAX_OPENED_SOCKETS] = {0};
-    httpd_ws_frame_t ws_pkt = {false, false, HTTPD_WS_TYPE_TEXT, data, size};
+    httpd_ws_frame_t ws_pkt = {};
+    ws_pkt.type = HTTPD_WS_TYPE_TEXT;
+    ws_pkt.payload = data;
+    ws_pkt.len = size;
 
     if (!http_server)
         return;
@@ -98,7 +101,8 @@ void web_notify_serial_state(int state)
     static int client_fds[CONFIG_HTTPD_MAX_OPENED_SOCKETS] = {0};
     const char *state_str = "IDLE";
     char json_msg[64] = {0};
-    httpd_ws_frame_t ws_pkt = {false, false, HTTPD_WS_TYPE_TEXT, NULL, 0};
+    httpd_ws_frame_t ws_pkt = {};
+    ws_pkt.type = HTTPD_WS_TYPE_TEXT;
 
     if (!s_http_server)
         return;
@@ -146,7 +150,8 @@ esp_err_t web_send_to_uart(httpd_req_t *req)
 {
     esp_err_t ret = ESP_OK;
     web_data_t *data = (web_data_t *)req->user_ctx;
-    httpd_ws_frame_t ws_pkt = {false, false, HTTPD_WS_TYPE_TEXT, NULL, 0};
+    httpd_ws_frame_t ws_pkt = {};
+    ws_pkt.type = HTTPD_WS_TYPE_TEXT;
 
     if (req->method == HTTP_GET)
     {
