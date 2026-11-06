@@ -128,6 +128,10 @@ extern "C" void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_r
 #endif // CONFIG_USB_DEBUG_PROBE
 
 
+#define WIFI_STA_MAXIMUM_RETRY 10
+
+static int s_wifi_retry_num = 0;
+
 static void event_handler(void *arg, esp_event_base_t event_base,
                            int32_t event_id, void *event_data)
 {
@@ -139,11 +143,25 @@ static void event_handler(void *arg, esp_event_base_t event_base,
     }
     else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED)
     {
-        esp_wifi_connect();
-        ESP_LOGI(TAG, "retry to connect to the AP");
+        wifi_event_sta_disconnected_t *disconnected = (wifi_event_sta_disconnected_t *)event_data;
+        s_wifi_retry_num++;
+        ESP_LOGW(TAG, "disconnected, reason=%d", disconnected->reason);
+        if (s_wifi_retry_num <= WIFI_STA_MAXIMUM_RETRY)
+        {
+            esp_wifi_connect();
+            ESP_LOGI(TAG, "retry to connect to the AP (%d/%d)", s_wifi_retry_num, WIFI_STA_MAXIMUM_RETRY);
+        }
+        else
+        {
+            ESP_LOGW(TAG, "failed to connect to the AP after %d attempts, falling back to softAP provisioning", WIFI_STA_MAXIMUM_RETRY);
+            esp_wifi_stop();
+            esp_wifi_deinit();
+            wifi_init_softap();
+        }
     }
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
     {
+        s_wifi_retry_num = 0;
         ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
     }
 }
