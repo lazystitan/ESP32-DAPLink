@@ -1,0 +1,19 @@
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-16m.csv"
+CONFIG_PARTITION_TABLE_FILENAME="partitions-16m.csv"
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+
+# USB_DEBUG_PROBE (native USB Device/HID/Bulk CMSIS-DAP) is intentionally left
+# disabled on this board: the ESP32-S31-Korvo-1's USB 2.0 Type-A port is wired
+# as a Host-only port (TPS2051C supplies VBUS to external devices, no reverse-
+# power protection). Connecting it to a PC's USB port risks back-feeding 5V
+# into the board's VCC_5V rail through the switch IC's body diode. Use the
+# USBIP wireless path for debugging on this board instead.
+
+# Dedicated GPIO's register-level bit-banging (debug_gpio_dedic.c) was written
+# against the ESP32-S3 GPIO/GPIO_SD register layout and has never been
+# validated on S31. SWD link to the target was unreliable (~1/10 connect
+# success) with dedicated GPIO; using the regular gpio_set_level()/
+# gpio_get_level() API trades some speed for not depending on S31-specific
+# register offsets that haven't been confirmed to match S3.
+CONFIG_DEBUG_PROBE_USE_REGULAR_GPIO=y
