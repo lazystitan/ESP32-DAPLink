@@ -26,8 +26,9 @@
 #if defined(CONFIG_USB_DEBUG_PROBE)
 
 #include "tinyusb.h"
+#include "tinyusb_default_config.h"
 #include "tusb_config.h"
-#include "tusb_cdc_acm.h"
+#include "tinyusb_cdc_acm.h"
 #include "usb/usb_desc.h"
 #include "usb/msc_disk.h"
 #include "usb/usb_cdc_handler.h"
@@ -170,21 +171,10 @@ extern "C" void app_main(void)
 {
 #if defined(CONFIG_USB_DEBUG_PROBE)
     bool ret = false;
-    tinyusb_config_t tusb_cfg =
-    {
-        .device_descriptor = NULL,
-        .string_descriptor = NULL,
-        .string_descriptor_count = 0,
-        .external_phy = false,
-        .configuration_descriptor = NULL,
-        .self_powered = false,
-        .vbus_monitor_io = 0
-    };
+    tinyusb_config_t tusb_cfg = TINYUSB_DEFAULT_CONFIG();
     tinyusb_config_cdcacm_t acm_cfg =
     {
-        .usb_dev = TINYUSB_USBDEV_0,
         .cdc_port = TINYUSB_CDC_ACM_0,
-        .rx_unread_buf_sz = 64,
         .callback_rx = usb_cdc_send_to_uart, /* The first way to register a callback */
         .callback_rx_wanted_char = NULL,
         .callback_line_state_changed = usb_cdc_line_state_changed,
@@ -213,12 +203,12 @@ extern "C" void app_main(void)
 
 #if defined(CONFIG_USB_DEBUG_PROBE)
     ret = msc_dick_mount(CONFIG_TINYUSB_MSC_MOUNT_PATH);
-    tusb_cfg.configuration_descriptor = get_configuration_descriptor(ret);
-    tusb_cfg.string_descriptor = get_string_descriptor(ret);
-    tusb_cfg.string_descriptor_count = get_string_descriptor_count();
-    tusb_cfg.device_descriptor = get_device_descriptor();
+    tusb_cfg.descriptor.full_speed_config = get_configuration_descriptor(ret);
+    tusb_cfg.descriptor.string = get_string_descriptor(ret);
+    tusb_cfg.descriptor.string_count = get_string_descriptor_count();
+    tusb_cfg.descriptor.device = get_device_descriptor();
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
-    ESP_ERROR_CHECK(tusb_cdc_acm_init(&acm_cfg));
+    ESP_ERROR_CHECK(tinyusb_cdcacm_init(&acm_cfg));
 #else
     mount_spiflash_fs();
 #endif

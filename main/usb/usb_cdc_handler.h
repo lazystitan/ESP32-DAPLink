@@ -11,7 +11,7 @@
 #pragma once
 
 #include "tinyusb.h"
-#include "tusb_cdc_acm.h"
+#include "tinyusb_cdc_acm.h"
 
 #ifdef __cplusplus
 extern "C" {
