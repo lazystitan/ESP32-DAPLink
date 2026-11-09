@@ -10,10 +10,10 @@ CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
 # into the board's VCC_5V rail through the switch IC's body diode. Use the
 # USBIP wireless path for debugging on this board instead.
 
-# Dedicated GPIO's register-level bit-banging (debug_gpio_dedic.c) was written
-# against the ESP32-S3 GPIO/GPIO_SD register layout and has never been
-# validated on S31. SWD link to the target was unreliable (~1/10 connect
-# success) with dedicated GPIO; using the regular gpio_set_level()/
-# gpio_get_level() API trades some speed for not depending on S31-specific
-# register offsets that haven't been confirmed to match S3.
-CONFIG_DEBUG_PROBE_USE_REGULAR_GPIO=y
+# Dedicated GPIO bundles are bound to the CPU core that creates them, and the
+# CSR-based fast GPIO access only drives the channels of the core executing it.
+# The usbipd/programmer tasks are not pinned, so on a dual-core S31 the SWD
+# bit-banging could migrate to the other core and corrupt the SWD timing
+# (observed ~1/10 connect success). Run single-core like the S3 config does,
+# which keeps the default dedicated GPIO backend.
+CONFIG_FREERTOS_UNICORE=y

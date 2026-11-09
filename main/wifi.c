@@ -172,4 +172,9 @@ void wifi_connect_sta(void)
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &sta_config));
     ESP_ERROR_CHECK(esp_wifi_start());
+
+    /* The default STA modem sleep (WIFI_PS_MIN_MODEM) delays inbound packets
+     * until the next DTIM wakeup, adding hundreds of ms to every USBIP round
+     * trip. A debug probe needs low latency, so keep the radio awake. */
+    ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
 }
