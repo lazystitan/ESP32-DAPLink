@@ -114,7 +114,8 @@ __STATIC_FORCEINLINE void debug_probe_swdio_out_disable(void)
 
 __STATIC_FORCEINLINE int debug_probe_swdio_read(void)
 {
-    return dedic_gpio_cpu_ll_read_in();
+    /* The CSR holds all dedicated input channels; DAP expects 0 or 1 */
+    return dedic_gpio_cpu_ll_read_in() & GPIO_SWDIO_MASK;
 }
 
 __STATIC_FORCEINLINE void debug_probe_swclk_set(void)
@@ -160,7 +161,8 @@ __STATIC_FORCEINLINE void debug_probe_jtag_led_on(void)
 
 __STATIC_FORCEINLINE int debug_probe_tdo_read(void)
 {
-    return dedic_gpio_cpu_ll_read_in();
+    /* The CSR holds all dedicated input channels; DAP expects 0 or 1 */
+    return dedic_gpio_cpu_ll_read_in() & GPIO_TDO_MASK;
 }
 
 __STATIC_FORCEINLINE void debug_probe_tdi_write(int val)
