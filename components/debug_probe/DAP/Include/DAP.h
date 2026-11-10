@@ -328,15 +328,30 @@
  #ifndef DELAY_SLOW_CYCLES
  #define DELAY_SLOW_CYCLES       3U      // Number of cycles for one iteration
  #endif
- #if defined(true)
+ // Busy-wait for "delay" iterations. Mirrors the reference Cortex-M inline asm
+ // loop (subs/bne) with RISC-V instructions. The former "#if defined(true)"
+ // guard is false under C23 (-std=gnu23, true is a keyword), which built an
+ // empty function and made every SWD clock run at full GPIO speed.
+ // delay == 0 returns immediately instead of wrapping around.
+ // DELAY_SLOW_CYCLES must match the real cycles per iteration (measure it).
+ #if defined(__riscv)
  __STATIC_FORCEINLINE void PIN_DELAY_SLOW (uint32_t delay) {
-   uint32_t count = delay;
-   while (--count);
+   __asm__ volatile (
+     "1:\n\t"
+     "beqz %0, 2f\n\t"
+     "addi %0, %0, -1\n\t"
+     "j    1b\n"
+     "2:\n"
+     : "+r" (delay) : : "memory"
+   );
  }
  #else
- __STATIC_FORCEINLINE void PIN_DELAY_SLOW (uint32_t delay)
- {
-     //TODO: delay function in asm
+ __STATIC_FORCEINLINE void PIN_DELAY_SLOW (uint32_t delay) {
+   uint32_t count = delay;
+   while (count > 1U) {
+     count--;
+     __asm__ volatile ("");
+   }
  }
  #endif
  

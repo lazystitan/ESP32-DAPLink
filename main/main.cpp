@@ -185,6 +185,11 @@ extern "C" void app_main(void)
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
+#if defined(CONFIG_WIFI_FORCE_SOFTAP)
+    /* Direct PC connection: always start the open SoftAP (192.168.4.1) and
+     * leave the stored STA credentials in NVS untouched. */
+    wifi_init_softap();
+#else
     if (wifi_config_exists())
     {
         ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, event_handler, &http_server));
@@ -195,6 +200,7 @@ extern "C" void app_main(void)
     {
         wifi_init_softap();
     }
+#endif
 
     web_server_init(&http_server);
     DAP_Setup();

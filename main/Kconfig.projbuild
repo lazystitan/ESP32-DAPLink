@@ -56,6 +56,14 @@ config DAPLINK_DESC_STRING
     default TINYUSB_DESC_VENDOR_STRING if BULK_DAPLINK
     depends on USB_DEBUG_PROBE
 
+config WIFI_FORCE_SOFTAP
+    bool "Always start in SoftAP mode (direct PC connection)"
+    default n
+    help
+        Start the open SoftAP "DAPLink-XXXX" (192.168.4.1) on every boot
+        instead of connecting to the router. Stored STA credentials in NVS
+        are not touched.
+
 config HTTPD_MAX_OPENED_SOCKETS
     int "The max opened sockets of http server"
     default 5
